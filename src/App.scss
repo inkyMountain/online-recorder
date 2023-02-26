@@ -1,0 +1,21 @@
+*,
+*::after,
+*::before {
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: none;
+}
+
+button {
+  // 背景色透明
+  background-color: transparent;
+  cursor: pointer;
+  margin-right: 50px;
+}
+
+.App {
+  video {
+    width: 800px;
+  }
+}
