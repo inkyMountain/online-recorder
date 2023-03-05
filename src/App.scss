@@ -5,17 +5,49 @@
   padding: 0;
   outline: none;
   border: none;
+  box-sizing: border-box;
 }
 
 button {
   // 背景色透明
   background-color: transparent;
   cursor: pointer;
-  margin-right: 50px;
+  padding: 10px;
+  margin: 10px;
+  border: 1px lightblue solid;
+  border-radius: 5px;
+  transition: ease 0.2s background-color;
+  &:hover {
+    background-color: beige;
+  }
 }
 
 .App {
-  video {
-    width: 800px;
+  .video-container {
+    border: rgb(91, 167, 243) solid 1px;
+    width: 100%;
+    border-radius: 5px;
+    video {
+      width: 100%;
+    }
+  }
+
+  .audio-input,
+  .audio-output,
+  .video-input {
+    border: rgb(243, 185, 91) solid 1px;
+    margin: 20px;
+    padding: 10px;
+    border-radius: 5px;
+  }
+
+  .device-info {
+    margin-bottom: 20px;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    &.selected {
+      background-color: antiquewhite;
+    }
   }
 }
