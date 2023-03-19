@@ -69,17 +69,25 @@ function App() {
     // src: source 源头
     // videoElement.srcObject = stream
     // track 视频轨或者音轨
-    window.navigator.mediaDevices.getDisplayMedia().then((stream) => {
-      videoRef.current.srcObject = stream
-      const recorder = new MediaRecorder(stream)
-      recorderRef.current = recorder
-      // data available
-      const dataAvailableListener = (event: BlobEvent) => {
-        blobs.current.push(event.data)
-      }
-      recorder.addEventListener("dataavailable", dataAvailableListener)
-      recorder.start()
-    })
+    window.navigator.mediaDevices
+      .getDisplayMedia({
+        audio: {},
+        video: {
+          width: 1920,
+          height: 1080,
+        },
+      })
+      .then((stream) => {
+        videoRef.current.srcObject = stream
+        const recorder = new MediaRecorder(stream)
+        recorderRef.current = recorder
+        // data available
+        const dataAvailableListener = (event: BlobEvent) => {
+          blobs.current.push(event.data)
+        }
+        recorder.addEventListener("dataavailable", dataAvailableListener)
+        recorder.start()
+      })
   }
 
   const onEnd = () => {
