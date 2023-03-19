@@ -5,38 +5,6 @@ import classnames from "classnames"
 import { Modal, Select } from "antd"
 import type { SelectProps } from "antd"
 
-interface DeviceListProps {
-  devices: MediaDeviceInfo | MediaDeviceInfo[]
-  selectedId?: string
-  onClick?: (device: MediaDeviceInfo) => void
-}
-const DeviceList = (props: DeviceListProps) => {
-  const { devices, onClick, selectedId } = props
-  const deviceList = Array.isArray(devices) ? devices : [devices]
-  return (
-    <>
-      {deviceList.map((device) => {
-        const { deviceId, groupId, kind, label } = device
-        return (
-          <div
-            className={classnames(
-              "device-info",
-              selectedId === deviceId && "selected",
-            )}
-            key={deviceId}
-            onClick={() => onClick?.(device)}
-          >
-            <div className="device-id">deviceId: {deviceId}</div>
-            <div className="device-group-id">groupId: {groupId}</div>
-            <div className="device-kind">kind: {kind}</div>
-            <div className="device-label">label: {label}</div>
-          </div>
-        )
-      })}
-    </>
-  )
-}
-
 // const ffmpeg = createFFmpeg()
 // ffmpeg.load().then(() => {
 //   console.log("加载完成")
@@ -271,40 +239,6 @@ function App() {
 
       <div className="video-container">
         <video ref={videoRef} autoPlay></video>
-      </div>
-
-      <div className="devices">
-        <div className="audio-input">
-          录音设备:
-          <DeviceList
-            selectedId={deviceId.audio}
-            devices={deviceList.audioInput}
-            onClick={(deviceInfo) => {
-              setDeviceId((deviceId) => {
-                return {
-                  ...deviceId,
-                  audio: deviceInfo.deviceId,
-                }
-              })
-            }}
-          ></DeviceList>
-        </div>
-
-        <div className="video-input">
-          摄像头：
-          <DeviceList
-            selectedId={deviceId.video}
-            devices={deviceList.videoInput}
-            onClick={(deviceInfo) => {
-              setDeviceId((deviceId) => {
-                return {
-                  ...deviceId,
-                  video: deviceInfo.deviceId,
-                }
-              })
-            }}
-          ></DeviceList>
-        </div>
       </div>
 
       <Modal
