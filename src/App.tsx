@@ -130,7 +130,10 @@ function App() {
     video: "",
   })
   const constraints: MediaStreamConstraints = {
-    video: {},
+    video: {
+      width: 1080,
+      height: 720,
+    },
     audio: {},
   }
   // 筛选有效的设备
@@ -220,6 +223,16 @@ function App() {
   }, [])
 
   const startRecordButtonDisabled = !deviceId.audio || !deviceId.video
+  /**
+   * todo
+   * 720p 1080 * 720
+   * 1080p 1920 * 1080
+   * 2k
+   * 4k
+   * Select string 1080x720
+   * resolution.split('x') ["1080", "720"]
+   * parseInt()
+   */
 
   return (
     <div className="App">
@@ -292,9 +305,16 @@ export default App
  * 导出: 下载文件，URLObject。
  * 设备列表：列出所有音频和视频设备
 
+陈亦邦的作业：
+给开始录制按钮，加上弹窗，选择要录屏的分辨率，然后开始录制。
+
 下周工作：
-   音频的质量
-   视频的分辨率
-   以什么视频格式导出
-   将录屏和摄像头视频组合起来
+   1. 视频的分辨率
+
+   2. ffmpeg: mp4, mkv, flv, webm
+   使用 ffmpeg 导出上述格式的视频
+
+   3. 将录屏和摄像头视频组合起来，包括：
+    - 摄像头的 video 标签的拖拽和大小调整
+    - 使用 ffmpeg 合并两个视频
  */
