@@ -6,44 +6,53 @@ import { Modal, Select } from "antd"
 import type { SelectProps } from "antd"
 import { downloadBlob } from "./utils/download"
 
-// const ffmpeg = createFFmpeg()
-// ffmpeg.load().then(() => {
-//   console.log("加载完成")
-// })
-// ffmpeg.setProgress(({ ratio }) => {
-//   console.log("ratio ===========>", ratio)
-// })
-// ffmpeg.setLogger(({ type, message }) => {
-//   console.log(type, message)
-//   /*
-//    * type can be one of following:
-//    *
-//    * info: internal workflow debug messages
-//    * fferr: ffmpeg native stderr output
-//    * ffout: ffmpeg native stdout output
-//    */
-// })
-// // file system
-// // mkdir: make directory
-// // ffmpeg.FS('mkdir')
-// // ffmpeg.run('ffmpeg', '-i', 'test.webm')
+const ffmpeg = createFFmpeg()
+ffmpeg.load().then(() => {
+  console.log("加载完成")
+})
+ffmpeg.setProgress(({ ratio }) => {
+  console.log("ratio ===========>", ratio)
+})
+ffmpeg.setLogger(({ type, message }) => {
+  console.log(type, message)
+  /*
+   * type can be one of following:
+   *
+   * info: internal workflow debug messages
+   * fferr: ffmpeg native stderr output
+   * ffout: ffmpeg native stdout output
+   */
+})
+// file system
+// mkdir: make directory
+// ffmpeg.FS('mkdir')
+// ffmpeg.run('ffmpeg', '-i', 'test.webm')
 
-// const transformWebm = async (blob: Blob) => {
-//   return blob
-//     .arrayBuffer()
-//     .then((buffer) => {
-//       const arrayBuffer = new Uint8Array(buffer, 0, buffer.byteLength)
-//       // 我们有的：ArrayBuffer 需要的：Uint8Array
-//       ffmpeg.FS("writeFile", "test.webm", arrayBuffer)
-//       console.log("开始转换")
-//       return ffmpeg.run("-i", "test.webm", "output.mp4")
-//     })
-//     .then(() => {
-//       console.log("转换完成")
-//       const array = ffmpeg.FS("readFile", "output.mp4")
-//       return new Blob([array])
-//     })
-// }
+const transformVideoFormat = async (
+  blob: Blob,
+  {
+    inputFilename,
+    outputFilename,
+  }: {
+    inputFilename: string
+    outputFilename: string
+  },
+) => {
+  return blob
+    .arrayBuffer()
+    .then((buffer) => {
+      const arrayBuffer = new Uint8Array(buffer, 0, buffer.byteLength)
+      // 我们有的：ArrayBuffer 需要的：Uint8Array
+      ffmpeg.FS("writeFile", inputFilename, arrayBuffer)
+      console.log("开始转换")
+      return ffmpeg.run("-i", inputFilename, outputFilename)
+    })
+    .then(() => {
+      console.log("转换完成")
+      const array = ffmpeg.FS("readFile", outputFilename)
+      return new Blob([array])
+    })
+}
 
 function App() {
   const videoRef = useRef<HTMLVideoElement>(null!)
@@ -69,13 +78,11 @@ function App() {
     // src: source 源头
     // videoElement.srcObject = stream
     // track 视频轨或者音轨
+    blobs.current = []
     window.navigator.mediaDevices
       .getDisplayMedia({
         audio: {},
-        video: {
-          width: 1920,
-          height: 1080,
-        },
+        // video: true,
       })
       .then((stream) => {
         videoRef.current.srcObject = stream
@@ -98,24 +105,60 @@ function App() {
     recorderRef.current.stop()
   }
 
-  // 转换成 mp4 格式的 blob
-  const transformedBlob = useRef<Blob>(null!)
-  const onTransform = async () => {
-    /**
-     * webm格式blob -> mp4格式blob
-     */
-    // const videoBlob = new Blob(blobs.current)
-    // const mp4Blob = await transformWebm(videoBlob)
-    // console.log("完成！！")
-    // transformedBlob.current = mp4Blob
+  const onDownload = () => {
+    setIsDownloadModalOpen(true)
+    // downloadBlob(blobs.current, {
+    //   filename: "test",
+    //   mimeType: "video/x-msvideo",
+    // })
+    // blobs.current = []
   }
 
-  const onDownload = () => {
-    downloadBlob(blobs.current, {
-      filename: "test",
-      mimeType: "video/webm",
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false)
+  const [selectedVideoFormat, setSelectedVideoFormat] =
+    useState<SupportedExtensionNames>("mp4")
+  const videoFormatOptions: SelectProps["options"] = [
+    {
+      label: "mp4",
+      value: "mp4",
+    },
+    {
+      label: "flv",
+      value: "flv",
+    },
+    {
+      label: "mkv",
+      value: "mkv",
+    },
+    {
+      label: "avi",
+      value: "avi",
+    },
+  ]
+
+  const [isConfirmButtonLoading, setIsConfirmButtonLoading] = useState(false)
+
+  const onConfirmDownload = async () => {
+    setIsConfirmButtonLoading(true)
+    // 1. 转换 blob 的格式
+    const videoBlob = new Blob(blobs.current)
+    const outputFilename = `output.${selectedVideoFormat}`
+    const transformedBlob = await transformVideoFormat(videoBlob, {
+      inputFilename: "test.webm",
+      outputFilename,
     })
-    blobs.current = []
+
+    // 2. 下载 blob
+    downloadBlob(transformedBlob, {
+      extensionName: selectedVideoFormat,
+      filename: outputFilename,
+    })
+    // downloadBlob(videoBlob, {
+    //   extensionName: selectedVideoFormat,
+    //   filename: "output.webm",
+    // })
+    setIsConfirmButtonLoading(false)
+    console.log("下载完成")
   }
 
   const createOptions = (devices: MediaDeviceInfo[]) => {
@@ -248,7 +291,6 @@ function App() {
         <button onClick={onCameraClick}>请求用户媒体</button>
         <button onClick={onStart}>开始录制</button>
         <button onClick={onEnd}>结束录制</button>
-        <button onClick={onTransform}>转换格式</button>
         <button onClick={onDownload}>下载</button>
       </div>
 
@@ -302,6 +344,30 @@ function App() {
           />
         </div>
       </Modal>
+
+      <Modal
+        open={isDownloadModalOpen}
+        okText="下载"
+        cancelText="取消"
+        closable={false}
+        onOk={onConfirmDownload}
+        onCancel={() => {
+          setIsDownloadModalOpen(false)
+        }}
+        okButtonProps={{ loading: isConfirmButtonLoading }}
+      >
+        <div>
+          选择下载视频的格式：
+          <Select
+            style={{ width: "100%" }}
+            value={selectedVideoFormat}
+            onChange={(value) => {
+              setSelectedVideoFormat(value)
+            }}
+            options={videoFormatOptions}
+          />
+        </div>
+      </Modal>
     </div>
   )
 }
@@ -317,12 +383,13 @@ export default App
 给开始录制按钮，加上弹窗，选择要录屏的分辨率，然后开始录制。
 
 下周工作：
-   1. 视频的分辨率
+   1. 视频的分辨率 [done]
 
-   2. ffmpeg: mp4, mkv, flv, webm
-   使用 ffmpeg 导出上述格式的视频
+   2. ffmpeg: mp4, mkv, flv, avi [done]
+   使用 ffmpeg 导出上述格式的视频 
 
-   3. 将录屏和摄像头视频组合起来，包括：
+   3. 将录屏和摄像头视频组合起来，包括：[todo] 
     - 摄像头的 video 标签的拖拽和大小调整
     - 使用 ffmpeg 合并两个视频
+ffmpeg -i 1.webm -vf "movie=2.webm:loop=200,scale=iw/2:-1[bg];[bg][0]overlay=100:200:shortest=1" out.mp4
  */

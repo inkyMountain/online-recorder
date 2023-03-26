@@ -4,25 +4,28 @@
 export const downloadBlob = (
   blob: Blob | Blob[],
   options: {
-    mimeType: "video/webm" | "video/x-matroska" | "video/mp4" | "video/x-flv"
+    extensionName: SupportedExtensionNames
     filename: string
   },
 ) => {
-  const { mimeType, filename } = options
-  type ExtensionNameKeys = typeof options.mimeType
-  const extensionNameRecord: Record<ExtensionNameKeys, string> = {
-    "video/webm": "webm",
-    "video/mp4": "mp4",
-    "video/x-flv": "flv",
-    "video/x-matroska": "mkv",
+  const { extensionName, filename } = options
+  const extensionNameRecord: Record<
+    SupportedExtensionNames,
+    SupportedMimeTypes
+  > = {
+    webm: "video/webm",
+    mp4: "video/mp4",
+    flv: "video/x-flv",
+    mkv: "video/x-matroska",
+    avi: "video/x-msvideo",
   }
-  const extensionName = extensionNameRecord[mimeType]
+  const mimeType = extensionNameRecord[extensionName]
   const blobArray = Array.isArray(blob) ? blob : [blob]
   const mergedBlob = new Blob(blobArray, { type: mimeType })
   const url = URL.createObjectURL(mergedBlob)
   const link = document.createElement("a")
   link.href = url
-  link.download = `${filename}.${extensionName}`
+  link.download = filename
   document.body.appendChild(link)
   link.style.display = "none"
   link.click()
