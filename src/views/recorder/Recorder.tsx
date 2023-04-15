@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { downloadBlob } from "../../utils/download"
 import ffmpegUtil from "../../utils/ffmpeg"
 
+// 导出一个名为 Component 的路由组件。这是 react router 的约定。
 export const Component = () => {
   const videoRef = useRef<HTMLVideoElement>(null!)
   const recorderRef = useRef<MediaRecorder>(null!)

@@ -1,9 +1,13 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom"
 import "./App.scss"
+// 我们定义的路由
 import { routes } from "./router/routes"
 
+// 根据路由配置，创建路由对象。
 const router = createBrowserRouter(routes)
+
 function App() {
+  // react router 提供的组件，它会根据当前的url路径，渲染对应的路由组件。
   return <RouterProvider router={router} />
 }
 
